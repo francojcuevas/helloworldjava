@@ -1,0 +1,29 @@
+pipeline {
+
+    agent any
+    tools { 
+      maven 'maven' 
+    }
+    stages {
+        stage('Build') {
+	steps{
+              sh 'mvn clean package'   
+	    }
+        }                        
+        stage('SonarQube analysis') {
+	
+            steps {
+	        withSonarQubeEnv(credentialsId: 'token_sonar', installationName:'Sonarqube_trabajofinal'){
+		sh 'mvn sonar:sonar'
+		}
+            }
+        }
+	
+	stage('Deploy'){
+    steps{
+        deploy adapters: [tomcat9(credentialsId: 'dfce12fa-5980-49a1-9943-cb31ba0ba8d7', path: '', url: 'http://192.168.68.118:8081')], contextPath: 'helloword', war: '**/*.war'
+    }
+        }
+
+   	}
+}
